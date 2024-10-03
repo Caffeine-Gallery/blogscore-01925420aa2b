@@ -30,7 +30,8 @@ async function handleAuthenticated() {
 async function checkAuthentication() {
   if (!authClient || !await authClient.isAuthenticated()) {
     const mainContent = document.getElementById('mainContent');
-    mainContent.innerHTML = '<p>Please log in to access this feature.</p><button onclick="login()">Log In</button>';
+    mainContent.innerHTML = '<p>Please log in to access this feature.</p><button id="loginBtn">Log In</button>';
+    document.getElementById('loginBtn').addEventListener('click', login);
     return false;
   }
   if (!currentUser) {
@@ -61,9 +62,13 @@ async function fetchAndDisplayPosts() {
         <div class="post">
           <h3>${post.title}</h3>
           <p>${post.content.substring(0, 100)}...</p>
-          <button onclick="viewPost(${post.id})">View Post</button>
+          <button class="viewPostBtn" data-postid="${post.id}">View Post</button>
         </div>
       `).join('');
+      
+      document.querySelectorAll('.viewPostBtn').forEach(button => {
+        button.addEventListener('click', (e) => viewPost(e.target.dataset.postid));
+      });
     }
   } catch (error) {
     postList.innerHTML = 'Error fetching posts: ' + error.message;
@@ -83,18 +88,20 @@ async function displayProfile() {
         <h2>My Profile</h2>
         <p><strong>Username:</strong> ${profile.username}</p>
         <p><strong>Bio:</strong> ${profile.bio}</p>
-        <button onclick="editProfile()">Edit Profile</button>
+        <button id="editProfileBtn">Edit Profile</button>
         <h3>My Posts</h3>
         <div id="userPosts"></div>
       `;
+      document.getElementById('editProfileBtn').addEventListener('click', editProfile);
       fetchAndDisplayUserPosts();
     } else {
       mainContent.innerHTML = `
         <h2>Create Profile</h2>
         <input id="username" placeholder="Username">
         <textarea id="bio" placeholder="Bio"></textarea>
-        <button onclick="createProfile()">Create Profile</button>
+        <button id="createProfileBtn">Create Profile</button>
       `;
+      document.getElementById('createProfileBtn').addEventListener('click', createProfile);
     }
   } catch (error) {
     mainContent.innerHTML = 'Error fetching profile: ' + error.message;
@@ -106,29 +113,42 @@ async function createProfile() {
 
   const username = document.getElementById('username').value;
   const bio = document.getElementById('bio').value;
-  await backend.createProfile(username, bio);
-  displayProfile();
+  try {
+    await backend.createProfile(username, bio);
+    displayProfile();
+  } catch (error) {
+    alert('Error creating profile: ' + error.message);
+  }
 }
 
 async function editProfile() {
   if (!await checkAuthentication()) return;
 
   const mainContent = document.getElementById('mainContent');
-  const profile = await backend.getProfile(currentUser);
-  mainContent.innerHTML = `
-    <h2>Edit Profile</h2>
-    <input id="username" value="${profile.username}" disabled>
-    <textarea id="bio">${profile.bio}</textarea>
-    <button onclick="updateProfile()">Update Profile</button>
-  `;
+  try {
+    const profile = await backend.getProfile(currentUser);
+    mainContent.innerHTML = `
+      <h2>Edit Profile</h2>
+      <input id="username" value="${profile.username}" disabled>
+      <textarea id="bio">${profile.bio}</textarea>
+      <button id="updateProfileBtn">Update Profile</button>
+    `;
+    document.getElementById('updateProfileBtn').addEventListener('click', updateProfile);
+  } catch (error) {
+    mainContent.innerHTML = 'Error loading profile for editing: ' + error.message;
+  }
 }
 
 async function updateProfile() {
   if (!await checkAuthentication()) return;
 
   const bio = document.getElementById('bio').value;
-  await backend.updateBio(bio);
-  displayProfile();
+  try {
+    await backend.updateBio(bio);
+    displayProfile();
+  } catch (error) {
+    alert('Error updating profile: ' + error.message);
+  }
 }
 
 async function fetchAndDisplayUserPosts() {
@@ -146,9 +166,13 @@ async function fetchAndDisplayUserPosts() {
         <div class="post">
           <h4>${post.title}</h4>
           <p>${post.content.substring(0, 100)}...</p>
-          <button onclick="viewPost(${post.id})">View Post</button>
+          <button class="viewPostBtn" data-postid="${post.id}">View Post</button>
         </div>
       `).join('');
+      
+      document.querySelectorAll('.viewPostBtn').forEach(button => {
+        button.addEventListener('click', (e) => viewPost(e.target.dataset.postid));
+      });
     }
   } catch (error) {
     userPosts.innerHTML = 'Error fetching posts: ' + error.message;
@@ -163,8 +187,9 @@ function displayCreatePost() {
     <h2>Create New Post</h2>
     <input id="postTitle" placeholder="Title">
     <textarea id="postContent" placeholder="Content"></textarea>
-    <button onclick="createPost()">Create Post</button>
+    <button id="submitPostBtn">Create Post</button>
   `;
+  document.getElementById('submitPostBtn').addEventListener('click', createPost);
 }
 
 async function createPost() {
@@ -172,8 +197,12 @@ async function createPost() {
 
   const title = document.getElementById('postTitle').value;
   const content = document.getElementById('postContent').value;
-  await backend.createPost(title, content);
-  displayHome();
+  try {
+    await backend.createPost(title, content);
+    displayHome();
+  } catch (error) {
+    alert('Error creating post: ' + error.message);
+  }
 }
 
 async function viewPost(postId) {
@@ -195,8 +224,9 @@ async function viewPost(postId) {
       <h3>Ratings</h3>
       <p>Average Rating: ${aggregatedRating ? aggregatedRating.toFixed(1) : 'No ratings yet'}</p>
       <input type="number" id="ratingInput" min="1" max="5" placeholder="Rate (1-5)">
-      <button onclick="ratePost(${postId})">Submit Rating</button>
+      <button id="submitRatingBtn">Submit Rating</button>
     `;
+    document.getElementById('submitRatingBtn').addEventListener('click', () => ratePost(postId));
   } catch (error) {
     mainContent.innerHTML = 'Error fetching post: ' + error.message;
   }
@@ -206,8 +236,12 @@ async function ratePost(postId) {
   if (!await checkAuthentication()) return;
 
   const ratingValue = document.getElementById('ratingInput').value;
-  await backend.ratePost(postId, Number(ratingValue));
-  viewPost(postId);
+  try {
+    await backend.ratePost(postId, Number(ratingValue));
+    viewPost(postId);
+  } catch (error) {
+    alert('Error rating post: ' + error.message);
+  }
 }
 
 document.getElementById('homeBtn').addEventListener('click', displayHome);
