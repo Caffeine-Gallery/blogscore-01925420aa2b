@@ -105,6 +105,12 @@ actor {
     userPosts
   };
 
+  public query func getAllPosts() : async [Post] {
+    let allPosts = Iter.toArray(posts.vals());
+    Debug.print("Fetched " # Nat.toText(allPosts.size()) # " posts in total");
+    allPosts
+  };
+
   // Rating System
   public shared(msg) func ratePost(postId: PostId, value: Nat) : async () {
     let userId = msg.caller;

@@ -23,6 +23,7 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(IDL.Float64)],
         ['query'],
       ),
+    'getAllPosts' : IDL.Func([], [IDL.Vec(Post)], ['query']),
     'getPost' : IDL.Func([PostId], [IDL.Opt(Post)], ['query']),
     'getPostRatings' : IDL.Func(
         [PostId],

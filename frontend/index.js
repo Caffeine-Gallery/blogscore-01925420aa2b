@@ -54,7 +54,7 @@ async function fetchAndDisplayPosts() {
   postList.innerHTML = 'Loading posts...';
 
   try {
-    const posts = await backend.getUserPosts(currentUser);
+    const posts = await backend.getAllPosts();
     if (posts.length === 0) {
       postList.innerHTML = 'No posts yet. Create your first post!';
     } else {
@@ -62,6 +62,8 @@ async function fetchAndDisplayPosts() {
         <div class="post">
           <h3>${post.title}</h3>
           <p>${post.content.substring(0, 100)}...</p>
+          <p>Author: ${post.authorId.toText()}</p>
+          <p>Created: ${new Date(Number(post.createdAt) / 1000000).toLocaleString()}</p>
           <button class="viewPostBtn" data-postid="${post.id}">View Post</button>
         </div>
       `).join('');
@@ -235,7 +237,7 @@ async function viewPost(postId) {
     mainContent.innerHTML = `
       <h2>${post.title}</h2>
       <p>${post.content}</p>
-      <p>Author: ${post.authorId}</p>
+      <p>Author: ${post.authorId.toText()}</p>
       <p>Created at: ${new Date(Number(post.createdAt) / 1000000).toLocaleString()}</p>
       <h3>Ratings</h3>
       <p>Average Rating: ${aggregatedRating ? aggregatedRating.toFixed(1) : 'No ratings yet'}</p>

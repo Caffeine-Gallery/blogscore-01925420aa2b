@@ -24,6 +24,7 @@ service : {
   createPost: (text, text) -> (PostId);
   createProfile: (text, text) -> ();
   getAggregatedRating: (PostId) -> (opt float64) query;
+  getAllPosts: () -> (vec Post) query;
   getPost: (PostId) -> (opt Post) query;
   getPostRatings: (PostId) -> (opt vec Rating) query;
   getProfile: (UserId) -> (opt User) query;

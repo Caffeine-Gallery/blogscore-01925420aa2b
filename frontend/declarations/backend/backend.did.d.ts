@@ -18,6 +18,7 @@ export interface _SERVICE {
   'createPost' : ActorMethod<[string, string], PostId>,
   'createProfile' : ActorMethod<[string, string], undefined>,
   'getAggregatedRating' : ActorMethod<[PostId], [] | [number]>,
+  'getAllPosts' : ActorMethod<[], Array<Post>>,
   'getPost' : ActorMethod<[PostId], [] | [Post]>,
   'getPostRatings' : ActorMethod<[PostId], [] | [Array<Rating>]>,
   'getProfile' : ActorMethod<[UserId], [] | [User]>,
