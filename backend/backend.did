@@ -1,0 +1,33 @@
+type UserId = principal;
+type User = 
+ record {
+   bio: text;
+   id: UserId;
+   username: text;
+ };
+type Time = int;
+type Rating = 
+ record {
+   userId: UserId;
+   value: nat;
+ };
+type PostId = nat;
+type Post = 
+ record {
+   authorId: UserId;
+   content: text;
+   createdAt: Time;
+   id: PostId;
+   title: text;
+ };
+service : {
+  createPost: (text, text) -> (PostId);
+  createProfile: (text, text) -> ();
+  getAggregatedRating: (PostId) -> (opt float64) query;
+  getPost: (PostId) -> (opt Post) query;
+  getPostRatings: (PostId) -> (opt vec Rating) query;
+  getProfile: (UserId) -> (opt User) query;
+  getUserPosts: (UserId) -> (vec Post) query;
+  ratePost: (PostId, nat) -> ();
+  updateBio: (text) -> ();
+}
