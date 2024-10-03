@@ -1,5 +1,6 @@
 import { backend } from 'declarations/backend';
 import { AuthClient } from '@dfinity/auth-client';
+import { Principal } from '@dfinity/principal';
 
 let authClient;
 let currentUser;
@@ -21,8 +22,22 @@ async function login() {
 }
 
 async function handleAuthenticated() {
-  currentUser = await authClient.getIdentity().getPrincipal();
+  const identity = await authClient.getIdentity();
+  currentUser = identity.getPrincipal();
   displayHome();
+}
+
+async function checkAuthentication() {
+  if (!authClient || !await authClient.isAuthenticated()) {
+    const mainContent = document.getElementById('mainContent');
+    mainContent.innerHTML = '<p>Please log in to access this feature.</p><button onclick="login()">Log In</button>';
+    return false;
+  }
+  if (!currentUser) {
+    const identity = await authClient.getIdentity();
+    currentUser = identity.getPrincipal();
+  }
+  return true;
 }
 
 function displayHome() {
@@ -32,6 +47,8 @@ function displayHome() {
 }
 
 async function fetchAndDisplayPosts() {
+  if (!await checkAuthentication()) return;
+
   const postList = document.getElementById('postList');
   postList.innerHTML = 'Loading posts...';
 
@@ -54,6 +71,8 @@ async function fetchAndDisplayPosts() {
 }
 
 async function displayProfile() {
+  if (!await checkAuthentication()) return;
+
   const mainContent = document.getElementById('mainContent');
   mainContent.innerHTML = 'Loading profile...';
 
@@ -83,6 +102,8 @@ async function displayProfile() {
 }
 
 async function createProfile() {
+  if (!await checkAuthentication()) return;
+
   const username = document.getElementById('username').value;
   const bio = document.getElementById('bio').value;
   await backend.createProfile(username, bio);
@@ -90,6 +111,8 @@ async function createProfile() {
 }
 
 async function editProfile() {
+  if (!await checkAuthentication()) return;
+
   const mainContent = document.getElementById('mainContent');
   const profile = await backend.getProfile(currentUser);
   mainContent.innerHTML = `
@@ -101,12 +124,16 @@ async function editProfile() {
 }
 
 async function updateProfile() {
+  if (!await checkAuthentication()) return;
+
   const bio = document.getElementById('bio').value;
   await backend.updateBio(bio);
   displayProfile();
 }
 
 async function fetchAndDisplayUserPosts() {
+  if (!await checkAuthentication()) return;
+
   const userPosts = document.getElementById('userPosts');
   userPosts.innerHTML = 'Loading posts...';
 
@@ -129,6 +156,8 @@ async function fetchAndDisplayUserPosts() {
 }
 
 function displayCreatePost() {
+  if (!checkAuthentication()) return;
+
   const mainContent = document.getElementById('mainContent');
   mainContent.innerHTML = `
     <h2>Create New Post</h2>
@@ -139,6 +168,8 @@ function displayCreatePost() {
 }
 
 async function createPost() {
+  if (!await checkAuthentication()) return;
+
   const title = document.getElementById('postTitle').value;
   const content = document.getElementById('postContent').value;
   await backend.createPost(title, content);
@@ -146,6 +177,8 @@ async function createPost() {
 }
 
 async function viewPost(postId) {
+  if (!await checkAuthentication()) return;
+
   const mainContent = document.getElementById('mainContent');
   mainContent.innerHTML = 'Loading post...';
 
@@ -170,6 +203,8 @@ async function viewPost(postId) {
 }
 
 async function ratePost(postId) {
+  if (!await checkAuthentication()) return;
+
   const ratingValue = document.getElementById('ratingInput').value;
   await backend.ratePost(postId, Number(ratingValue));
   viewPost(postId);
