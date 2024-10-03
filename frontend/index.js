@@ -72,6 +72,7 @@ async function fetchAndDisplayPosts() {
     }
   } catch (error) {
     postList.innerHTML = 'Error fetching posts: ' + error.message;
+    console.error('Error fetching posts:', error);
   }
 }
 
@@ -105,6 +106,7 @@ async function displayProfile() {
     }
   } catch (error) {
     mainContent.innerHTML = 'Error fetching profile: ' + error.message;
+    console.error('Error fetching profile:', error);
   }
 }
 
@@ -118,6 +120,7 @@ async function createProfile() {
     displayProfile();
   } catch (error) {
     alert('Error creating profile: ' + error.message);
+    console.error('Error creating profile:', error);
   }
 }
 
@@ -136,6 +139,7 @@ async function editProfile() {
     document.getElementById('updateProfileBtn').addEventListener('click', updateProfile);
   } catch (error) {
     mainContent.innerHTML = 'Error loading profile for editing: ' + error.message;
+    console.error('Error loading profile for editing:', error);
   }
 }
 
@@ -148,6 +152,7 @@ async function updateProfile() {
     displayProfile();
   } catch (error) {
     alert('Error updating profile: ' + error.message);
+    console.error('Error updating profile:', error);
   }
 }
 
@@ -176,6 +181,7 @@ async function fetchAndDisplayUserPosts() {
     }
   } catch (error) {
     userPosts.innerHTML = 'Error fetching posts: ' + error.message;
+    console.error('Error fetching user posts:', error);
   }
 }
 
@@ -197,11 +203,21 @@ async function createPost() {
 
   const title = document.getElementById('postTitle').value;
   const content = document.getElementById('postContent').value;
+
+  if (!title.trim() || !content.trim()) {
+    alert('Please enter both title and content for your post.');
+    return;
+  }
+
   try {
-    await backend.createPost(title, content);
+    console.log('Creating post with title:', title, 'and content:', content);
+    const result = await backend.createPost(title, content);
+    console.log('Post created successfully:', result);
+    alert('Post created successfully!');
     displayHome();
   } catch (error) {
     alert('Error creating post: ' + error.message);
+    console.error('Error creating post:', error);
   }
 }
 
@@ -229,6 +245,7 @@ async function viewPost(postId) {
     document.getElementById('submitRatingBtn').addEventListener('click', () => ratePost(postId));
   } catch (error) {
     mainContent.innerHTML = 'Error fetching post: ' + error.message;
+    console.error('Error fetching post:', error);
   }
 }
 
@@ -236,11 +253,18 @@ async function ratePost(postId) {
   if (!await checkAuthentication()) return;
 
   const ratingValue = document.getElementById('ratingInput').value;
+  if (!ratingValue || isNaN(ratingValue) || ratingValue < 1 || ratingValue > 5) {
+    alert('Please enter a valid rating between 1 and 5.');
+    return;
+  }
+
   try {
     await backend.ratePost(postId, Number(ratingValue));
+    alert('Rating submitted successfully!');
     viewPost(postId);
   } catch (error) {
     alert('Error rating post: ' + error.message);
+    console.error('Error rating post:', error);
   }
 }
 

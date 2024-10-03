@@ -10,6 +10,7 @@ import Option "mo:base/Option";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
 import Time "mo:base/Time";
+import Debug "mo:base/Debug";
 
 actor {
   // Types
@@ -50,13 +51,14 @@ actor {
       bio = bio;
     };
     users.put(userId, user);
+    Debug.print("Profile created for user: " # Principal.toText(userId));
   };
 
   public shared(msg) func updateBio(newBio: Text) : async () {
     let userId = msg.caller;
     switch (users.get(userId)) {
       case (null) {
-        // User not found
+        Debug.print("User not found: " # Principal.toText(userId));
       };
       case (?user) {
         let updatedUser : User = {
@@ -65,6 +67,7 @@ actor {
           bio = newBio;
         };
         users.put(userId, updatedUser);
+        Debug.print("Bio updated for user: " # Principal.toText(userId));
       };
     };
   };
@@ -75,6 +78,10 @@ actor {
 
   // Blog Post Management
   public shared(msg) func createPost(title: Text, content: Text) : async PostId {
+    Debug.print("Creating post for user: " # Principal.toText(msg.caller));
+    Debug.print("Title: " # title);
+    Debug.print("Content: " # content);
+
     let post : Post = {
       id = nextPostId;
       authorId = msg.caller;
@@ -84,6 +91,7 @@ actor {
     };
     posts.put(nextPostId, post);
     nextPostId += 1;
+    Debug.print("Post created with ID: " # Nat.toText(nextPostId - 1));
     nextPostId - 1
   };
 
@@ -93,6 +101,7 @@ actor {
 
   public query func getUserPosts(userId: UserId) : async [Post] {
     let userPosts = Array.filter<Post>(Iter.toArray(posts.vals()), func (post) { post.authorId == userId });
+    Debug.print("Fetched " # Nat.toText(userPosts.size()) # " posts for user: " # Principal.toText(userId));
     userPosts
   };
 
@@ -112,6 +121,7 @@ actor {
         ratings.put(postId, Array.append<Rating>(updatedRatings, [rating]));
       };
     };
+    Debug.print("Post " # Nat.toText(postId) # " rated " # Nat.toText(value) # " by user: " # Principal.toText(userId));
   };
 
   public query func getPostRatings(postId: PostId) : async ?[Rating] {
